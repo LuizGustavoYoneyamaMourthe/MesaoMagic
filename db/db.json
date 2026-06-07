@@ -1,0 +1,88 @@
+{
+  "decks": [
+    {
+      "id": 1,
+      "titulo": "White Classic Meekstone",
+      "descricao": "Deck baseado em vigilancia e inflar criaturas",
+      "conteudo": "Este deck utiliza encantamentos de inflar e criaturas classicas de vigilancia, criando um equilibrio entre ataque e defesa.",
+      "imagem": "assets/img/white.jpg",
+      "cartas_principais": [
+        {
+          "nome": "Meekstone",
+          "imagem": "assets/img/meekstone.jpg"
+        },
+        {
+          "nome": "Serra Angel",
+          "imagem": "assets/img/serraangel.jpg"
+        },
+        {
+          "nome": "Blessing",
+          "imagem": "assets/img/blessing.jpg"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "titulo": "Black Sacrifice",
+      "descricao": "Sacrifício e drenar vida",
+      "conteudo": "Deck baseado na mecanica de sacrificio e gerar mana.",
+      "imagem": "assets/img/black.jpg",
+      "cartas_principais": [
+        {
+          "nome": "Sengir Autocrat",
+          "imagem": "assets/img/sengirautocrat.jpg"
+        },
+        {
+          "nome": "Drain Life",
+          "imagem": "assets/img/drainlife.jpg"
+        },
+        {
+          "nome": "Ashnod Altar",
+          "imagem": "assets/img/ashnodaltar.jpg"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "titulo": "Bloco Urza Stomp",
+      "descricao": "Mono green do bloco de urza",
+      "conteudo": "Utiliza somente criaturas do bloco de urza de alto valor para pisotear os adversários.",
+      "imagem": "assets/img/piper.jpg",
+      "cartas_principais": [
+        {
+          "nome": "Child of Gaea",
+          "imagem": "assets/img/childofgaea.jpg"
+        },
+        {
+          "nome": "Rofellos",
+          "imagem": "assets/img/rofellos.jpg"
+        },
+        {
+          "nome": "Priest of Titania",
+          "imagem": "assets/img/priestoftitania.jpg"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "titulo": "Mono red burn",
+      "descricao": "Aprecie o poder da reverberação",
+      "conteudo": "Distribua violência com estilo utilizando mono red clássico premodern.",
+      "imagem": "assets/img/red.jpg",
+      "cartas_principais": [
+        {
+          "nome": "Repercussion",
+          "imagem": "assets/img/repercussion.jpg"
+        },
+        {
+          "nome": "Pyroclasm",
+          "imagem": "assets/img/pyroclasm.jpg"
+        },
+        {
+          "nome": "Howling Mine",
+          "imagem": "assets/img/howlingmine.jpg"
+        }
+      ]
+    }
+  ]
+}
