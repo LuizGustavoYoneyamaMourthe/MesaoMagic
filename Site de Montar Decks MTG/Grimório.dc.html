@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:'Figtree',system-ui,sans-serif;color:#2c2820;background:#f4efe4}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#d8cdb4;border-radius:6px;border:2px solid #f4efe4}
+::-webkit-scrollbar-track{background:transparent}
+::placeholder{color:#a89e88}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div style="min-height:100dvh;background:#f4efe4;color:#2c2820;font-family:'Figtree',system-ui,sans-serif;">
+
+  <!-- ============ TOPBAR ============ -->
+  <header style="position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 26px;background:rgba(244,239,228,0.86);backdrop-filter:blur(12px);border-bottom:1px solid #e3d9c3;">
+    <div onClick="{{ goDash }}" style="display:flex;align-items:center;gap:11px;cursor:pointer;">
+      <span style="display:flex;gap:3px;">
+        <span style="width:11px;height:11px;border-radius:50%;background:#f6efd6;box-shadow:inset 0 -1px 1px rgba(0,0,0,.18)"></span>
+        <span style="width:11px;height:11px;border-radius:50%;background:#bcdaee;box-shadow:inset 0 -1px 1px rgba(0,0,0,.18)"></span>
+        <span style="width:11px;height:11px;border-radius:50%;background:#bbb3ac;box-shadow:inset 0 -1px 1px rgba(0,0,0,.18)"></span>
+        <span style="width:11px;height:11px;border-radius:50%;background:#f1b6a2;box-shadow:inset 0 -1px 1px rgba(0,0,0,.18)"></span>
+        <span style="width:11px;height:11px;border-radius:50%;background:#bbdbbf;box-shadow:inset 0 -1px 1px rgba(0,0,0,.18)"></span>
+      </span>
+      <span style="font-family:'Cinzel',serif;font-weight:700;font-size:21px;letter-spacing:1.5px;color:#26221b;">{{ brandName }}</span>
+      <span style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#9a9079;font-weight:600;border-left:1px solid #ddd2bd;padding-left:11px;">Construtor de Decks</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ openNew }}" style="{{ sPrimary }}">+ Novo deck</button>
+      </sc-if>
+      <sc-if value="{{ isEditor }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ goDash }}" style="{{ sGhost }}">← Decks</button>
+        <button onClick="{{ openActiveView }}" style="{{ sPrimary }}">Visualizar</button>
+      </sc-if>
+      <sc-if value="{{ isView }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ goDash }}" style="{{ sGhost }}">← Decks</button>
+        <button onClick="{{ openActiveEdit }}" style="{{ sPrimary }}">Editar deck</button>
+      </sc-if>
+    </div>
+  </header>
+
+  <!-- ============ DASHBOARD ============ -->
+  <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+    <main style="max-width:1180px;margin:0 auto;padding:40px 26px 90px;animation:fade .3s ease;">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:26px;">
+        <div>
+          <h1 style="font-family:'Cinzel',serif;font-weight:700;font-size:32px;margin:0 0 4px;color:#26221b;letter-spacing:.5px;">Meus Decks</h1>
+          <p style="margin:0;color:#8a8170;font-size:15px;">{{ deckCount }} deck(s) na sua coleção</p>
+        </div>
+        <button onClick="{{ openNew }}" style="{{ sPrimary }}">+ Novo deck</button>
+      </div>
+
+      <sc-if value="{{ hasDecks }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(282px,1fr));gap:22px;">
+          <sc-for list="{{ decks }}" as="deck" hint-placeholder-count="3">
+            <article onClick="{{ deck.onCardClick }}" style="background:#fffdf7;border:1px solid #e6ddc8;border-radius:15px;overflow:hidden;cursor:pointer;box-shadow:0 1px 3px rgba(40,30,10,.05);transition:transform .15s,box-shadow .15s;" style-hover="transform:translateY(-3px);box-shadow:0 12px 28px rgba(40,30,10,.14);">
+              <div style="{{ deck.coverStyle }}" data-screen-label="deck-cover">
+                <span style="position:absolute;top:11px;left:11px;background:rgba(255,253,247,.92);color:#5a5346;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:3px 9px;border-radius:20px;">{{ deck.formatLabel }}</span>
+                <span style="position:absolute;bottom:11px;right:11px;display:flex;gap:3px;">
+                  <sc-for list="{{ deck.pips }}" as="p" hint-placeholder-count="0">
+                    <span style="{{ p.dotStyle }}">{{ p.label }}</span>
+                  </sc-for>
+                </span>
+                <sc-if value="{{ deck.hasArt }}" hint-placeholder-val="{{ false }}">
+                  <span style="position:absolute;bottom:10px;left:13px;color:#f4efe4;font-size:11.5px;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.6);">{{ deck.commanderName }}</span>
+                </sc-if>
+              </div>
+              <div style="padding:14px 16px 8px;">
+                <h3 style="font-family:'Cinzel',serif;font-size:18px;font-weight:600;margin:0;color:#26221b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ deck.name }}</h3>
+                <div style="display:flex;gap:9px;color:#8a8170;font-size:13px;margin-top:5px;">
+                  <span>{{ deck.countLabel }}</span><span style="color:#cfc3a8;">·</span><span>{{ deck.priceLabel }}</span>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;padding:10px 16px 14px;border-top:1px solid #f0e9d8;margin-top:6px;">
+                <button onClick="{{ deck.onEdit }}" style="{{ sPrimaryFlex }}">Editar</button>
+                <button onClick="{{ deck.onOpenView }}" style="{{ sGhost }}">Ver</button>
+                <button onClick="{{ deck.onDelete }}" title="Excluir deck" style="{{ deleteIconStyle }}">✕</button>
+              </div>
+            </article>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ noDecks }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;padding:90px 20px;border:1.5px dashed #d8cdb4;border-radius:18px;background:#fffdf7;">
+          <div style="display:flex;gap:5px;justify-content:center;margin-bottom:16px;">
+            <span style="width:16px;height:16px;border-radius:50%;background:#f6efd6;box-shadow:inset 0 -1px 1px rgba(0,0,0,.18)"></span>
+            <span style="width:16px;height:16px;border-radius:50%;background:#bcdaee;box-shadow:inset 0 -1px 1px rgba(0,0,0,.18)"></span>
+            <span style="width:16px;height:16px;border-radius:50%;background:#bbb3ac;box-shadow:inset 0 -1px 1px rgba(0,0,0,.18)"></span>
+            <span style="width:16px;height:16px;border-radius:50%;background:#f1b6a2;box-shadow:inset 0 -1px 1px rgba(0,0,0,.18)"></span>
+            <span style="width:16px;height:16px;border-radius:50%;background:#bbdbbf;box-shadow:inset 0 -1px 1px rgba(0,0,0,.18)"></span>
+          </div>
+          <div style="font-family:'Cinzel',serif;font-size:22px;color:#26221b;margin-bottom:6px;">Seu grimório está vazio</div>
+          <div style="font-size:14.5px;color:#8a8170;margin-bottom:22px;">Crie seu primeiro deck e comece a buscar cartas.</div>
+          <button onClick="{{ openNew }}" style="{{ sPrimary }}">+ Criar meu primeiro deck</button>
+        </div>
+      </sc-if>
+    </main>
+  </sc-if>
+
+  <!-- ============ EDITOR ============ -->
+  <sc-if value="{{ isEditor }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:332px minmax(0,1fr) 348px;height:calc(100dvh - 61px);">
+
+      <!-- LEFT: SEARCH -->
+      <aside style="border-right:1px solid #e3d9c3;background:#faf6ec;display:flex;flex-direction:column;min-height:0;">
+        <div style="padding:16px 16px 12px;border-bottom:1px solid #ece3cf;">
+          <div style="font-family:'Cinzel',serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#8a8170;margin-bottom:9px;">Buscar cartas</div>
+          <input value="{{ query }}" onInput="{{ onQueryInput }}" onKeyDown="{{ onQueryKey }}" placeholder="ex: lightning bolt, t:creature c:r" style="width:100%;padding:10px 12px;border:1px solid #ddd2bd;border-radius:10px;background:#fff;font-size:14px;color:#2c2820;outline:none;" />
+          <sc-if value="{{ isStandard }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <button onClick="{{ setZoneMain }}" style="{{ zoneMainStyle }}">Main</button>
+              <button onClick="{{ setZoneSide }}" style="{{ zoneSideStyle }}">Sideboard</button>
+            </div>
+          </sc-if>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px;min-height:16px;">
+            <sc-if value="{{ searching }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:#8a8170;display:flex;align-items:center;gap:6px;"><span style="width:11px;height:11px;border:2px solid #d8cdb4;border-top-color:#6d28d9;border-radius:50%;display:inline-block;animation:spin .7s linear infinite;"></span>Buscando…</span></sc-if>
+            <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:#a89e88;">{{ resultsCount }} resultados</span></sc-if>
+          </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:8px;min-height:0;">
+          <sc-if value="{{ showStart }}" hint-placeholder-val="{{ true }}">
+            <div style="text-align:center;padding:40px 18px;color:#a89e88;font-size:13px;line-height:1.6;">Digite o nome de uma carta para buscar no Scryfall.<br><span style="color:#bdb29a;">Cartas, imagens e preços reais.</span></div>
+          </sc-if>
+          <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:34px 18px;color:#b85c4a;font-size:13px;">{{ searchError }}</div>
+          </sc-if>
+          <sc-for list="{{ results }}" as="r" hint-placeholder-count="0">
+            <div onMouseEnter="{{ r.onHover }}" style="display:flex;gap:10px;align-items:center;padding:7px 8px;border-radius:10px;transition:background .12s;" style-hover="background:#f1e9d6;">
+              <img src="{{ r.thumb }}" alt="" style="width:34px;height:47px;border-radius:4px;object-fit:cover;flex-shrink:0;background:#e6ddc8;" />
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13.5px;font-weight:600;color:#2c2820;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.name }}</div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:3px;min-width:0;">{{ r.manaPips }}<span style="font-size:11px;color:#9a9079;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.typeShort }}</span></div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">
+                <span style="font-size:11px;color:#a89e88;">{{ r.priceLabel }}</span>
+                <div style="display:flex;gap:4px;">
+                  <sc-if value="{{ r.canCommand }}" hint-placeholder-val="{{ false }}"><button onClick="{{ r.onCommand }}" title="Tornar comandante" style="width:26px;height:26px;border-radius:7px;border:1px solid #ddd2bd;background:#fff;color:#a06a00;font-size:14px;cursor:pointer;line-height:1;padding:0;">♛</button></sc-if>
+                  <button onClick="{{ r.onAdd }}" title="Adicionar ao deck" style="{{ addBtnStyle }}">+</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </aside>
+
+      <!-- CENTER: DECK CONTENTS -->
+      <section style="overflow-y:auto;min-height:0;" data-screen-label="editor">
+        <div style="position:sticky;top:0;z-index:5;background:rgba(244,239,228,.93);backdrop-filter:blur(8px);padding:16px 24px;border-bottom:1px solid #e3d9c3;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+              <h2 onClick="{{ onRename }}" title="Clique para renomear" style="font-family:'Cinzel',serif;font-size:22px;font-weight:700;margin:0;color:#26221b;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ deckName }}</h2>
+              <span style="{{ fmtBadgeStyle }}">{{ deckFormat }}</span>
+            </div>
+            <div style="display:flex;border:1px solid #ddd2bd;border-radius:9px;overflow:hidden;flex-shrink:0;">
+              <button onClick="{{ setModeList }}" style="{{ listTabStyle }}">Lista</button>
+              <button onClick="{{ setModeGrid }}" style="{{ gridTabStyle }}">Grade</button>
+            </div>
+          </div>
+          <sc-if value="{{ showProgress }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:12px;">
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:#8a8170;margin-bottom:5px;"><span>{{ countLabel }}</span><span>{{ priceLabel }}</span></div>
+              <div style="height:6px;background:#ece3cf;border-radius:6px;overflow:hidden;"><div style="{{ progressStyle }}"></div></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noProgress }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:10px;font-size:13px;color:#8a8170;">{{ countLabel }} · {{ priceLabel }}</div>
+          </sc-if>
+        </div>
+
+        <div style="padding:18px 24px 80px;">
+          <!-- commander zone -->
+          <sc-if value="{{ isCommander }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-bottom:22px;">
+              <div style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#6b6253;margin-bottom:9px;">Comandante</div>
+              <sc-if value="{{ hasCommander }}" hint-placeholder-val="{{ false }}">
+                <div onMouseEnter="{{ commander.onHover }}" style="display:flex;gap:14px;align-items:center;background:linear-gradient(135deg,#fffdf7,#f6efdc);border:1px solid #e6ddc8;border-radius:13px;padding:12px;">
+                  <img src="{{ commander.thumb }}" style="width:52px;height:73px;border-radius:5px;object-fit:cover;flex-shrink:0;" />
+                  <div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:16px;font-family:'Cinzel',serif;color:#26221b;">{{ commander.name }}</div><div style="margin-top:6px;">{{ commander.manaPips }}</div></div>
+                  <button onClick="{{ clearCommander }}" style="{{ sGhost }}">Remover</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noCommander }}" hint-placeholder-val="{{ true }}">
+                <div style="border:1.5px dashed #d8cdb4;border-radius:13px;padding:18px;text-align:center;color:#9a9079;font-size:13.5px;line-height:1.5;">Busque uma criatura lendária e clique em <span style="color:#a06a00;">♛</span> para defini-la como comandante.</div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ deckEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:60px 20px;color:#9a9079;">
+              <div style="font-family:'Cinzel',serif;font-size:19px;color:#8a8170;margin-bottom:6px;">Deck vazio</div>
+              <div style="font-size:14px;">Use a busca à esquerda para adicionar cartas.</div>
+            </div>
+          </sc-if>
+
+          <!-- LIST -->
+          <sc-if value="{{ editorList }}" hint-placeholder-val="{{ true }}">
+            <sc-for list="{{ groups }}" as="g" hint-placeholder-count="0">
+              <div style="margin-bottom:20px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#6b6253;">{{ g.label }}</span><span style="font-size:12px;color:#a89e88;">{{ g.count }}</span><span style="flex:1;height:1px;background:#ece3cf;"></span></div>
+                <div style="display:flex;flex-direction:column;gap:1px;">
+                  <sc-for list="{{ g.cards }}" as="c" hint-placeholder-count="0">
+                    <div onMouseEnter="{{ c.onHover }}" style="display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:9px;transition:background .12s;" style-hover="background:#f1e9d6;">
+                      <div style="display:flex;align-items:center;gap:3px;flex-shrink:0;">
+                        <button onClick="{{ c.onDec }}" style="{{ stepBtnStyle }}">−</button>
+                        <span style="width:22px;text-align:center;font-size:13px;font-weight:700;color:#2c2820;">{{ c.qty }}</span>
+                        <button onClick="{{ c.onInc }}" style="{{ stepBtnStyle }}">+</button>
+                      </div>
+                      <span style="flex:1;font-size:14px;color:#2c2820;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">{{ c.name }}</span>
+                      {{ c.manaPips }}
+                      <span style="font-size:11px;color:#a89e88;width:62px;text-align:right;flex-shrink:0;">{{ c.priceLabel }}</span>
+                      <button onClick="{{ c.onRemove }}" title="Remover" style="{{ removeBtnStyle }}">✕</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </sc-if>
+
+          <!-- GRID -->
+          <sc-if value="{{ editorGrid }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;">
+              <sc-for list="{{ gridCards }}" as="c" hint-placeholder-count="0">
+                <div onMouseEnter="{{ c.onHover }}" style="position:relative;">
+                  <img src="{{ c.image }}" alt="" style="width:100%;border-radius:9px;display:block;box-shadow:0 1px 4px rgba(40,30,10,.12);background:#e6ddc8;" />
+                  <span style="position:absolute;top:7px;left:7px;background:rgba(20,15,8,.82);color:#fff;font-size:12px;font-weight:700;border-radius:7px;padding:2px 8px;">{{ c.qty }}×</span>
+                  <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;">
+                    <button onClick="{{ c.onDec }}" style="{{ stepBtnStyle }}">−</button>
+                    <button onClick="{{ c.onInc }}" style="{{ stepBtnStyle }}">+</button>
+                    <button onClick="{{ c.onRemove }}" style="{{ removeBtnStyle }}">✕</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- SIDEBOARD -->
+          <sc-if value="{{ hasSide }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:26px;padding-top:18px;border-top:1px solid #e3d9c3;">
+              <div style="font-family:'Cinzel',serif;font-size:14px;letter-spacing:1px;text-transform:uppercase;color:#8a8170;margin-bottom:10px;">Sideboard</div>
+              <sc-for list="{{ sideGroups }}" as="g" hint-placeholder-count="0">
+                <div style="display:flex;flex-direction:column;gap:1px;margin-bottom:8px;">
+                  <sc-for list="{{ g.cards }}" as="c" hint-placeholder-count="0">
+                    <div onMouseEnter="{{ c.onHover }}" style="display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:9px;" style-hover="background:#f1e9d6;">
+                      <div style="display:flex;align-items:center;gap:3px;flex-shrink:0;">
+                        <button onClick="{{ c.onDec }}" style="{{ stepBtnStyle }}">−</button>
+                        <span style="width:22px;text-align:center;font-size:13px;font-weight:700;">{{ c.qty }}</span>
+                        <button onClick="{{ c.onInc }}" style="{{ stepBtnStyle }}">+</button>
+                      </div>
+                      <span style="flex:1;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">{{ c.name }}</span>
+                      {{ c.manaPips }}
+                      <button onClick="{{ c.onRemove }}" style="{{ removeBtnStyle }}">✕</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </section>
+
+      <!-- RIGHT: PREVIEW + STATS -->
+      <aside style="border-left:1px solid #e3d9c3;background:#faf6ec;overflow-y:auto;min-height:0;padding:18px;display:flex;flex-direction:column;gap:18px;">
+        <div>
+          <sc-if value="{{ hasPreview }}" hint-placeholder-val="{{ false }}">
+            <img src="{{ preview.image }}" alt="" style="width:100%;border-radius:12px;box-shadow:0 6px 20px rgba(40,30,10,.18);display:block;background:#e6ddc8;" />
+            <div style="margin-top:10px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><span style="font-weight:700;font-size:15px;color:#26221b;">{{ preview.name }}</span>{{ preview.manaPips }}</div>
+              <div style="font-size:12.5px;color:#8a8170;margin-top:3px;">{{ preview.type_line }}</div>
+              <div style="font-size:12px;color:#a89e88;margin-top:5px;">{{ preview.set }} · {{ preview.rarity }} · {{ preview.priceLabel }}</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noPreview }}" hint-placeholder-val="{{ true }}">
+            <div style="aspect-ratio:63/88;border:1.5px dashed #d8cdb4;border-radius:12px;display:flex;align-items:center;justify-content:center;text-align:center;color:#a89e88;font-size:13px;padding:20px;">Passe o mouse sobre uma carta para ver o preview</div>
+          </sc-if>
+        </div>
+
+        <div style="background:#fffdf7;border:1px solid #e6ddc8;border-radius:13px;padding:14px;">
+          <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#8a8170;margin-bottom:12px;">Estatísticas</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 10px;margin-bottom:16px;">
+            <div><div style="font-size:21px;font-weight:700;font-family:'Cinzel',serif;color:#26221b;">{{ count }}</div><div style="font-size:11px;color:#9a9079;">cartas</div></div>
+            <div><div style="font-size:21px;font-weight:700;font-family:'Cinzel',serif;color:#26221b;">{{ avgCmc }}</div><div style="font-size:11px;color:#9a9079;">CMC médio</div></div>
+            <div><div style="font-size:21px;font-weight:700;font-family:'Cinzel',serif;color:#26221b;">{{ lands }}</div><div style="font-size:11px;color:#9a9079;">terrenos</div></div>
+            <div><div style="font-size:16px;font-weight:700;font-family:'Cinzel',serif;color:#26221b;">{{ priceLabel }}</div><div style="font-size:11px;color:#9a9079;">valor estimado</div></div>
+          </div>
+          <div style="font-size:11px;color:#9a9079;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Curva de mana</div>
+          <div style="display:flex;align-items:flex-end;gap:5px;height:78px;margin-bottom:4px;">
+            <sc-for list="{{ curve }}" as="b" hint-placeholder-count="8">
+              <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;"><div style="{{ b.barStyle }}"></div></div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:5px;">
+            <sc-for list="{{ curve }}" as="b" hint-placeholder-count="8"><span style="flex:1;text-align:center;font-size:10px;color:#a89e88;">{{ b.label }}</span></sc-for>
+          </div>
+          <sc-if value="{{ hasColorBars }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:11px;color:#9a9079;margin:14px 0 8px;text-transform:uppercase;letter-spacing:.5px;">Pips por cor</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <sc-for list="{{ colorBars }}" as="c" hint-placeholder-count="0">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="{{ c.dotStyle }}">{{ c.label }}</span>
+                  <div style="flex:1;height:8px;background:#ece3cf;border-radius:6px;overflow:hidden;"><div style="{{ c.fillStyle }}"></div></div>
+                  <span style="font-size:11px;color:#9a9079;width:22px;text-align:right;">{{ c.count }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </aside>
+    </div>
+  </sc-if>
+
+  <!-- ============ VIEW ============ -->
+  <sc-if value="{{ isView }}" hint-placeholder-val="{{ false }}">
+    <main style="max-width:1180px;margin:0 auto;padding:32px 26px 90px;animation:fade .3s;" data-screen-label="view">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap;">
+        <div style="min-width:0;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><h1 style="font-family:'Cinzel',serif;font-size:30px;font-weight:700;margin:0;color:#26221b;">{{ deckName }}</h1><span style="{{ fmtBadgeStyle }}">{{ deckFormat }}</span></div>
+          <p style="margin:7px 0 0;color:#8a8170;font-size:14px;">{{ countLabel }} · {{ priceLabel }} · CMC médio {{ avgCmc }} · {{ lands }} terrenos</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div style="display:flex;border:1px solid #ddd2bd;border-radius:9px;overflow:hidden;">
+            <button onClick="{{ setViewGrid }}" style="{{ vGridTabStyle }}">Grade</button>
+            <button onClick="{{ setViewList }}" style="{{ vListTabStyle }}">Lista</button>
+          </div>
+          <button onClick="{{ openActiveEdit }}" style="{{ sPrimary }}">Editar</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:26px;align-items:start;">
+        <div>
+          <sc-if value="{{ showCommanderHi }}" hint-placeholder-val="{{ false }}">
+            <div onMouseEnter="{{ commander.onHover }}" style="display:flex;gap:14px;align-items:center;background:linear-gradient(135deg,#fffdf7,#f6efdc);border:1px solid #e6ddc8;border-radius:13px;padding:12px;margin-bottom:20px;">
+              <img src="{{ commander.thumb }}" style="width:50px;height:70px;border-radius:5px;object-fit:cover;flex-shrink:0;" />
+              <div><div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#a89e88;margin-bottom:2px;">Comandante</div><div style="font-weight:700;font-size:17px;font-family:'Cinzel',serif;color:#26221b;">{{ commander.name }}</div></div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ viewGrid }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;">
+              <sc-for list="{{ gridCards }}" as="c" hint-placeholder-count="6">
+                <div onMouseEnter="{{ c.onHover }}" style="position:relative;">
+                  <img src="{{ c.image }}" alt="" style="width:100%;border-radius:9px;display:block;box-shadow:0 1px 4px rgba(40,30,10,.12);background:#e6ddc8;" />
+                  <span style="position:absolute;top:7px;left:7px;background:rgba(20,15,8,.82);color:#fff;font-size:12px;font-weight:700;border-radius:7px;padding:2px 8px;">{{ c.qty }}×</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ viewList }}" hint-placeholder-val="{{ false }}">
+            <sc-for list="{{ groups }}" as="g" hint-placeholder-count="0">
+              <div style="margin-bottom:18px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#6b6253;">{{ g.label }}</span><span style="font-size:12px;color:#a89e88;">{{ g.count }}</span><span style="flex:1;height:1px;background:#ece3cf;"></span></div>
+                <div style="display:flex;flex-direction:column;gap:1px;">
+                  <sc-for list="{{ g.cards }}" as="c" hint-placeholder-count="0">
+                    <div onMouseEnter="{{ c.onHover }}" style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:9px;" style-hover="background:#fffdf7;">
+                      <span style="width:30px;font-size:13px;font-weight:700;color:#6b6253;flex-shrink:0;">{{ c.qty }}×</span>
+                      <span style="flex:1;font-size:14px;color:#2c2820;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">{{ c.name }}</span>
+                      {{ c.manaPips }}
+                      <span style="font-size:11px;color:#a89e88;width:62px;text-align:right;flex-shrink:0;">{{ c.priceLabel }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </sc-if>
+        </div>
+
+        <aside style="position:sticky;top:78px;display:flex;flex-direction:column;gap:16px;">
+          <sc-if value="{{ hasPreview }}" hint-placeholder-val="{{ false }}">
+            <img src="{{ preview.image }}" alt="" style="width:100%;border-radius:12px;box-shadow:0 6px 20px rgba(40,30,10,.18);display:block;background:#e6ddc8;" />
+          </sc-if>
+          <div style="background:#fffdf7;border:1px solid #e6ddc8;border-radius:13px;padding:14px;">
+            <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#8a8170;margin-bottom:12px;">Estatísticas</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 10px;margin-bottom:16px;">
+              <div><div style="font-size:21px;font-weight:700;font-family:'Cinzel',serif;color:#26221b;">{{ count }}</div><div style="font-size:11px;color:#9a9079;">cartas</div></div>
+              <div><div style="font-size:21px;font-weight:700;font-family:'Cinzel',serif;color:#26221b;">{{ avgCmc }}</div><div style="font-size:11px;color:#9a9079;">CMC médio</div></div>
+              <div><div style="font-size:21px;font-weight:700;font-family:'Cinzel',serif;color:#26221b;">{{ lands }}</div><div style="font-size:11px;color:#9a9079;">terrenos</div></div>
+              <div><div style="font-size:16px;font-weight:700;font-family:'Cinzel',serif;color:#26221b;">{{ priceLabel }}</div><div style="font-size:11px;color:#9a9079;">valor estimado</div></div>
+            </div>
+            <div style="font-size:11px;color:#9a9079;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Curva de mana</div>
+            <div style="display:flex;align-items:flex-end;gap:5px;height:70px;margin-bottom:4px;">
+              <sc-for list="{{ curve }}" as="b" hint-placeholder-count="8">
+                <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;"><div style="{{ b.barStyle }}"></div></div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:5px;">
+              <sc-for list="{{ curve }}" as="b" hint-placeholder-count="8"><span style="flex:1;text-align:center;font-size:10px;color:#a89e88;">{{ b.label }}</span></sc-for>
+            </div>
+            <sc-if value="{{ hasColorBars }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:11px;color:#9a9079;margin:14px 0 8px;text-transform:uppercase;letter-spacing:.5px;">Pips por cor</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <sc-for list="{{ colorBars }}" as="c" hint-placeholder-count="0">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="{{ c.dotStyle }}">{{ c.label }}</span>
+                    <div style="flex:1;height:8px;background:#ece3cf;border-radius:6px;overflow:hidden;"><div style="{{ c.fillStyle }}"></div></div>
+                    <span style="font-size:11px;color:#9a9079;width:22px;text-align:right;">{{ c.count }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </sc-if>
+
+  <!-- ============ MODAL: NEW DECK ============ -->
+  <sc-if value="{{ showNew }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeNew }}" style="position:fixed;inset:0;z-index:60;background:rgba(28,22,12,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fade .2s;">
+      <div onClick="{{ stop }}" style="background:#fffdf7;border-radius:16px;border:1px solid #e6ddc8;box-shadow:0 24px 60px rgba(0,0,0,.3);width:100%;max-width:430px;padding:24px;">
+        <h2 style="font-family:'Cinzel',serif;font-size:22px;margin:0 0 18px;color:#26221b;">Novo deck</h2>
+        <label style="display:block;font-size:11px;font-weight:700;color:#8a8170;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Nome</label>
+        <input value="{{ newName }}" onInput="{{ onNewName }}" placeholder="Meu deck incrível" style="width:100%;padding:11px 13px;border:1px solid #ddd2bd;border-radius:10px;font-size:15px;outline:none;margin-bottom:16px;color:#2c2820;" />
+        <label style="display:block;font-size:11px;font-weight:700;color:#8a8170;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Formato</label>
+        <select value="{{ newFormat }}" onChange="{{ onNewFormat }}" style="width:100%;padding:11px 13px;border:1px solid #ddd2bd;border-radius:10px;font-size:15px;background:#fff;margin-bottom:22px;color:#2c2820;">
+          <option value="commander">Commander / EDH — 100 cartas</option>
+          <option value="standard">Standard / Modern — 60 + 15</option>
+          <option value="generic">Genérico — sem limite</option>
+        </select>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button onClick="{{ closeNew }}" style="{{ sGhost }}">Cancelar</button>
+          <button onClick="{{ createDeck }}" style="{{ sPrimary }}">Criar deck</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ MODAL: DELETE ============ -->
+  <sc-if value="{{ deletePending }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ cancelDelete }}" style="position:fixed;inset:0;z-index:60;background:rgba(28,22,12,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fade .2s;">
+      <div onClick="{{ stop }}" style="background:#fffdf7;border-radius:16px;border:1px solid #e6ddc8;box-shadow:0 24px 60px rgba(0,0,0,.3);width:100%;max-width:400px;padding:24px;">
+        <h2 style="font-family:'Cinzel',serif;font-size:21px;margin:0 0 12px;color:#26221b;">Excluir deck?</h2>
+        <p style="color:#6b6253;font-size:14.5px;margin:0 0 22px;line-height:1.5;">O deck <strong>“{{ deletePendingName }}”</strong> será removido permanentemente. Esta ação não pode ser desfeita.</p>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button onClick="{{ cancelDelete }}" style="{{ sGhost }}">Cancelar</button>
+          <button onClick="{{ confirmDelete }}" style="{{ dangerStyle }}">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#6d28d9&quot;},&quot;brandName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Grimório&quot;}}">
+class Component extends DCLogic {
+  STORE = 'mtg_decks_v3';
+  MANA = { W:{bg:'#f6efd6',fg:'#6a5a1e'}, U:{bg:'#bcdaee',fg:'#0e4a73'}, B:{bg:'#bbb3ac',fg:'#27201b'}, R:{bg:'#f1b6a2',fg:'#9c2f1c'}, G:{bg:'#bbdbbf',fg:'#1f6b38'}, C:{bg:'#d6cfc4',fg:'#544b3e'} };
+
+  state = {
+    view:'dashboard', decks:[], activeId:null,
+    query:'', results:[], searching:false, searchError:'',
+    preview:null, editorMode:'list', viewMode:'grid',
+    showNew:false, newName:'', newFormat:'commander',
+    deletePending:null, zone:'main', loaded:false
+  };
+
+  componentDidMount(){ this.load(); }
+
+  uid(){ return 'd'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+  load(){
+    let decks=[];
+    try{ decks=JSON.parse(localStorage.getItem(this.STORE)||'[]'); }catch(e){}
+    this.setState({decks, loaded:true});
+    if(decks.length===0 && !localStorage.getItem('mtg_seed_v3')) this.seed();
+  }
+  persist(decks){ this.setState({decks}); try{ localStorage.setItem(this.STORE, JSON.stringify(decks)); }catch(e){} }
+  activeDeck(){ return this.state.decks.find(d=>d.id===this.state.activeId)||null; }
+  persistDeck(deck){ this.persist(this.state.decks.map(d=>d.id===deck.id?{...deck}:d)); }
+
+  norm(c){
+    const img = c.image_uris || (c.card_faces && c.card_faces[0] && c.card_faces[0].image_uris) || {};
+    const art = img.art_crop || '';
+    let cost = c.mana_cost;
+    if(!cost && c.card_faces) cost = c.card_faces.map(f=>f.mana_cost).filter(Boolean).join(' // ');
+    let colors = c.colors;
+    if(!colors && c.card_faces && c.card_faces[0]) colors = c.card_faces[0].colors;
+    return {
+      id:c.id, name:c.name, mana_cost:cost||'', cmc:c.cmc||0, type_line:c.type_line||'',
+      colors:colors||[], color_identity:c.color_identity||[],
+      image:img.normal||img.large||img.png||'', imageSmall:img.small||img.normal||'', art:art,
+      price: c.prices && c.prices.usd ? parseFloat(c.prices.usd) : (c.prices && c.prices.usd_foil ? parseFloat(c.prices.usd_foil) : null),
+      set:(c.set||'').toUpperCase(), rarity:c.rarity||''
+    };
+  }
+
+  async seed(){
+    try{
+      const names=["Atraxa, Praetors' Voice","Sol Ring","Arcane Signet","Command Tower","Cultivate","Swords to Plowshares","Counterspell","Doubling Season","Llanowar Elves","Birds of Paradise","Cyclonic Rift","Smothering Tithe","Rhystic Study","Forest","Island","Plains","Swamp"];
+      const res=await fetch('https://api.scryfall.com/cards/collection',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identifiers:names.map(n=>({name:n}))})});
+      if(!res.ok){ try{localStorage.setItem('mtg_seed_v3','1');}catch(e){} return; }
+      const data=await res.json();
+      const cards=(data.data||[]).map(c=>this.norm(c));
+      let commander=null; const main=[];
+      const landQty={Forest:9,Island:8,Plains:8,Swamp:8};
+      cards.forEach(c=>{
+        if(c.name.indexOf('Atraxa')===0){ commander=c; return; }
+        main.push({...c, qty: landQty[c.name]||1});
+      });
+      if(!commander && cards.length===0){ try{localStorage.setItem('mtg_seed_v3','1');}catch(e){} return; }
+      const deck={ id:this.uid(), name:'Atraxa Superamigos', format:'commander', commander, cards:main, sideboard:[], createdAt:Date.now(), updatedAt:Date.now() };
+      try{localStorage.setItem('mtg_seed_v3','1');}catch(e){}
+      this.persist([deck, ...this.state.decks]);
+    }catch(e){ try{localStorage.setItem('mtg_seed_v3','1');}catch(_){} }
+  }
+
+  // ---- navigation
+  goDash=()=>this.setState({view:'dashboard'});
+  openEditor=(id)=>{ const d=this.state.decks.find(x=>x.id===id); this.setState({view:'editor',activeId:id,query:'',results:[],searchError:'', preview:(d&&d.commander)||null, zone:'main'}); };
+  openView=(id)=>{ const d=this.state.decks.find(x=>x.id===id); this.setState({view:'view',activeId:id, preview:(d&&(d.commander||d.cards[0]))||null}); };
+  openActiveView=()=>this.openView(this.state.activeId);
+  openActiveEdit=()=>this.openEditor(this.state.activeId);
+  stop=(e)=>{ if(e&&e.stopPropagation) e.stopPropagation(); };
+
+  // ---- crud
+  openNew=()=>this.setState({showNew:true,newName:'',newFormat:'commander'});
+  closeNew=()=>this.setState({showNew:false});
+  createDeck=()=>{ const name=(this.state.newName||'').trim()||'Deck sem título'; const deck={id:this.uid(),name,format:this.state.newFormat,commander:null,cards:[],sideboard:[],createdAt:Date.now(),updatedAt:Date.now()}; this.persist([deck,...this.state.decks]); this.setState({showNew:false,view:'editor',activeId:deck.id,query:'',results:[],preview:null,zone:'main'}); };
+  askDelete=(id)=>this.setState({deletePending:id});
+  cancelDelete=()=>this.setState({deletePending:null});
+  confirmDelete=()=>{ const id=this.state.deletePending; const decks=this.state.decks.filter(d=>d.id!==id); const wasActive=this.state.activeId===id; this.persist(decks); this.setState({deletePending:null, activeId:wasActive?null:this.state.activeId, view:wasActive?'dashboard':this.state.view}); };
+
+  // ---- search
+  onQuery=(v)=>{ this.setState({query:v}); clearTimeout(this._t); if(!v.trim()){ this.setState({results:[],searching:false,searchError:''}); return;} this._t=setTimeout(()=>this.runSearch(v),350); };
+  searchNow=()=>{ clearTimeout(this._t); if(this.state.query.trim()) this.runSearch(this.state.query); };
+  async runSearch(v){
+    this.setState({searching:true,searchError:''}); const my=v;
+    try{
+      const r=await fetch('https://api.scryfall.com/cards/search?unique=cards&order=edhrec&dir=desc&q='+encodeURIComponent(v));
+      if(this.state.query!==my) return;
+      if(!r.ok){ this.setState({results:[],searching:false,searchError: r.status===404?'Nenhuma carta encontrada para essa busca.':'Não foi possível buscar agora.'}); return; }
+      const d=await r.json();
+      const cards=(d.data||[]).slice(0,60).map(c=>this.norm(c));
+      this.setState({results:cards,searching:false, preview: cards[0]||this.state.preview});
+    }catch(e){ if(this.state.query!==my) return; this.setState({results:[],searching:false,searchError:'Sem conexão com o Scryfall.'}); }
+  }
+
+  // ---- deck ops
+  addCard=(card)=>{ const d=this.activeDeck(); if(!d) return; const z=(d.format==='standard')?this.state.zone:'main'; if(z==='side'){ d.sideboard=d.sideboard||[]; } const list= z==='side'?d.sideboard:d.cards; const ex=list.find(c=>c.id===card.id); if(ex) ex.qty+=1; else list.push({...card,qty:1}); d.updatedAt=Date.now(); this.persistDeck(d); };
+  inc=(id,zone)=>{ const d=this.activeDeck(); if(!d)return; const list=zone==='side'?d.sideboard:d.cards; const c=list.find(x=>x.id===id); if(c)c.qty+=1; d.updatedAt=Date.now(); this.persistDeck(d); };
+  dec=(id,zone)=>{ const d=this.activeDeck(); if(!d)return; const list=zone==='side'?d.sideboard:d.cards; const c=list.find(x=>x.id===id); if(c){ c.qty-=1; if(c.qty<=0){ if(zone==='side') d.sideboard=d.sideboard.filter(x=>x.id!==id); else d.cards=d.cards.filter(x=>x.id!==id); } } d.updatedAt=Date.now(); this.persistDeck(d); };
+  remove=(id,zone)=>{ const d=this.activeDeck(); if(!d)return; if(zone==='side') d.sideboard=d.sideboard.filter(x=>x.id!==id); else d.cards=d.cards.filter(x=>x.id!==id); d.updatedAt=Date.now(); this.persistDeck(d); };
+  makeCommander=(card)=>{ const d=this.activeDeck(); if(!d)return; d.cards=d.cards.filter(x=>x.id!==card.id); d.commander=card; d.updatedAt=Date.now(); this.persistDeck(d); this.setState({preview:card}); };
+  clearCommander=()=>{ const d=this.activeDeck(); if(!d)return; d.commander=null; d.updatedAt=Date.now(); this.persistDeck(d); };
+  rename=()=>{ const d=this.activeDeck(); if(!d)return; const n=window.prompt('Nome do deck', d.name); if(n!==null){ d.name=n.trim()||d.name; d.updatedAt=Date.now(); this.persistDeck(d); } };
+  hover=(card)=>{ if(card) this.setState({preview:card}); };
+
+  // ---- helpers
+  fmtLabel(f){ return {commander:'Commander',standard:'Standard',generic:'Genérico'}[f]||f; }
+  fmtBadge(f,accent){ const base={display:'inline-flex',alignItems:'center',padding:'3px 11px',borderRadius:'20px',fontSize:'11px',fontWeight:700,textTransform:'uppercase',letterSpacing:'.6px'}; if(f==='commander') return {...base,background:accent+'1a',color:accent}; if(f==='standard') return {...base,background:'rgba(14,74,115,.1)',color:'#0e4a73'}; return {...base,background:'#e8dec9',color:'#6b6253'}; }
+  rarityLabel(r){ return {common:'Comum',uncommon:'Incomum',rare:'Rara',mythic:'Mítica',special:'Especial',bonus:'Bônus'}[r]||r; }
+  shortType(tl){ if(!tl) return ''; const base=tl.split('—')[0].split('//')[0].trim(); return base.length>26?base.slice(0,25)+'…':base; }
+  category(tl){ const t=(tl||'').toLowerCase(); if(t.indexOf('creature')>=0) return 'creature'; if(t.indexOf('planeswalker')>=0) return 'planeswalker'; if(t.indexOf('land')>=0) return 'land'; if(t.indexOf('instant')>=0) return 'instant'; if(t.indexOf('sorcery')>=0) return 'sorcery'; if(t.indexOf('enchantment')>=0) return 'enchantment'; if(t.indexOf('artifact')>=0) return 'artifact'; return 'other'; }
+  catLabel(k){ return {creature:'Criaturas',planeswalker:'Planeswalkers',instant:'Instantâneos',sorcery:'Feitiços',enchantment:'Encantamentos',artifact:'Artefatos',land:'Terrenos',other:'Outros'}[k]; }
+  priceStr(p){ return (p!=null&&!isNaN(p))?('US$ '+p.toFixed(2)):'—'; }
+
+  manaEl(cost,size){
+    size=size||15; if(!cost) return null;
+    const toks=(cost.match(/\{[^}]+\}/g)||[]);
+    const pips=toks.map((t,i)=>{
+      const s=t.slice(1,-1).toUpperCase(); let bg,fg,label;
+      if(this.MANA[s]){ bg=this.MANA[s].bg; fg=this.MANA[s].fg; label=s; }
+      else if(/^\d+$/.test(s)||s==='X'||s==='Y'||s==='Z'){ bg='#cfc8bb'; fg='#3a352d'; label=s; }
+      else if(s.indexOf('/')>=0){ const f=s.split('/')[0]; const m=this.MANA[f]; bg=m?m.bg:'#cfc8bb'; fg=m?m.fg:'#3a352d'; label=f; }
+      else { bg='#cfc8bb'; fg='#3a352d'; label=s.slice(0,1); }
+      return React.createElement('span',{key:i,style:{display:'inline-flex',alignItems:'center',justifyContent:'center',width:size+'px',height:size+'px',borderRadius:'50%',background:bg,color:fg,fontSize:(size*0.6)+'px',fontWeight:700,fontFamily:'ui-monospace,Menlo,monospace',boxShadow:'inset 0 -1px 1px rgba(0,0,0,0.18)',flexShrink:0}},label);
+    });
+    return React.createElement('span',{style:{display:'inline-flex',gap:'2px',flexShrink:0}},pips);
+  }
+
+  deckColors(deck){ const set={}; const all=[...(deck.cards||[])]; if(deck.commander)all.push(deck.commander); all.forEach(c=>(c.color_identity||[]).forEach(k=>set[k]=1)); const keys=['W','U','B','R','G'].filter(k=>set[k]); return keys.length?keys:['C']; }
+
+  stats(deck){
+    const accent=this.props.accentColor ?? '#6d28d9';
+    const all=[...(deck.cards||[])]; if(deck.commander) all.push({...deck.commander,qty:1});
+    let count=0,lands=0,cmcSum=0,nonland=0,price=0;
+    const cv=[0,0,0,0,0,0,0,0]; const col={W:0,U:0,B:0,R:0,G:0};
+    all.forEach(c=>{
+      const q=c.qty||1; count+=q;
+      const land=/land/i.test(c.type_line||'');
+      if(land) lands+=q;
+      if(c.price) price+=c.price*q;
+      if(!land){ const b=Math.min(7,Math.floor(c.cmc||0)); cv[b]+=q; cmcSum+=(c.cmc||0)*q; nonland+=q; }
+      const toks=(c.mana_cost||'').match(/\{[^}]+\}/g)||[];
+      toks.forEach(t=>{ const sym=t.slice(1,-1).toUpperCase(); ['W','U','B','R','G'].forEach(k=>{ if(sym.indexOf(k)>=0) col[k]+=q; }); });
+    });
+    const target= deck.format==='commander'?100: deck.format==='standard'?60: null;
+    const maxc=Math.max(1,cv[0],cv[1],cv[2],cv[3],cv[4],cv[5],cv[6],cv[7]);
+    const labels=['0','1','2','3','4','5','6','7+'];
+    const curve=cv.map((n,i)=>({label:labels[i],count:n, barStyle:{height:(n/maxc*100)+'%',minHeight:n>0?'4px':'0',width:'100%',background:accent,borderRadius:'3px 3px 0 0',transition:'height .3s'}}));
+    const maxcol=Math.max(1,col.W,col.U,col.B,col.R,col.G);
+    const colorBars=['W','U','B','R','G'].filter(k=>col[k]>0).map(k=>({k,label:k,count:col[k],
+      dotStyle:{width:'18px',height:'18px',borderRadius:'50%',background:this.MANA[k].bg,color:this.MANA[k].fg,display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:'10px',fontWeight:700,fontFamily:'monospace',flexShrink:0,boxShadow:'inset 0 -1px 1px rgba(0,0,0,.18)'},
+      fillStyle:{width:(col[k]/maxcol*100)+'%',height:'100%',background:this.MANA[k].bg,borderRadius:'6px'}}));
+    return {count,lands,price,target, avgCmc: nonland?cmcSum/nonland:0, curve, colorBars, nonland};
+  }
+
+  buildGroups(list,zone){
+    const order=['creature','planeswalker','instant','sorcery','enchantment','artifact','land','other'];
+    const map={};
+    (list||[]).forEach(c=>{ const k=this.category(c.type_line); (map[k]=map[k]||[]).push(c); });
+    return order.filter(k=>map[k]&&map[k].length).map(k=>({
+      key:k, label:this.catLabel(k),
+      count: map[k].reduce((a,c)=>a+(c.qty||1),0),
+      cards: map[k].map(c=>this.deckRow(c,zone))
+    }));
+  }
+
+  deckRow(c,zone){ return { id:c.id, name:c.name, qty:c.qty, manaPips:this.manaEl(c.mana_cost,14), priceLabel:this.priceStr(c.price!=null? c.price*(c.qty||1):null), thumb:c.imageSmall, image:c.image||c.imageSmall,
+    onInc:()=>this.inc(c.id,zone), onDec:()=>this.dec(c.id,zone), onRemove:()=>this.remove(c.id,zone), onHover:()=>this.hover(c) }; }
+
+  decoResult(c,deck){ const canCmd= deck&&deck.format==='commander'&&/legendary/i.test(c.type_line)&&/(creature|planeswalker)/i.test(c.type_line);
+    return { id:c.id, name:c.name, thumb:c.imageSmall, manaPips:this.manaEl(c.mana_cost,14), typeShort:this.shortType(c.type_line), priceLabel:this.priceStr(c.price),
+      onAdd:()=>this.addCard(c), onHover:()=>this.hover(c), canCommand:canCmd, onCommand:()=>this.makeCommander(c) }; }
+
+  decoDeckCard(d){
+    const st=this.stats(d); const keys=this.deckColors(d);
+    const pips=keys.map(k=>({label:k, dotStyle:{width:'16px',height:'16px',borderRadius:'50%',background:this.MANA[k].bg,color:this.MANA[k].fg,display:'inline-flex',alignItems:'center',justifyContent:'center',fontSize:'9px',fontWeight:700,fontFamily:'monospace',boxShadow:'inset 0 -1px 1px rgba(0,0,0,.2)'}}));
+    const art=(d.commander&&d.commander.art)||((d.cards.find(c=>c.art)||{}).art)||'';
+    const coverBase='position:relative;height:134px;';
+    const coverStyle= art
+      ? {position:'relative',height:'134px',backgroundImage:'linear-gradient(180deg,rgba(20,15,8,0) 35%,rgba(20,15,8,.5) 100%), url('+art+')',backgroundSize:'cover',backgroundPosition:'center 22%'}
+      : {position:'relative',height:'134px',background:'linear-gradient(135deg,#efe7d3,#e2d4b6)'};
+    return { id:d.id, name:d.name, formatLabel:this.fmtLabel(d.format), countLabel: st.target?(st.count+'/'+st.target+' cartas'):(st.count+' cartas'),
+      priceLabel:this.priceStr(st.price>0?st.price:null), coverStyle, pips, hasArt:!!art, commanderName: d.commander?d.commander.name:'',
+      onCardClick:()=>this.openView(d.id), onOpenView:(e)=>{ this.stop(e); this.openView(d.id); }, onEdit:(e)=>{ this.stop(e); this.openEditor(d.id); }, onDelete:(e)=>{ this.stop(e); this.askDelete(d.id); } };
+  }
+
+  tabStyle(active,accent){ return {padding:'7px 15px',border:'none',background:active?accent:'#fff',color:active?'#fff':'#6b6253',fontSize:'13px',fontWeight:600,cursor:'pointer',fontFamily:'inherit'}; }
+
+  renderVals(){
+    const s=this.state;
+    const accent=this.props.accentColor ?? '#6d28d9';
+    const brandName=this.props.brandName ?? 'Grimório';
+    const sPrimary={background:accent,color:'#fff',border:'none',borderRadius:'9px',padding:'9px 16px',fontWeight:600,fontSize:'14px',cursor:'pointer',fontFamily:'inherit',display:'inline-flex',alignItems:'center',gap:'7px',boxShadow:'0 1px 2px rgba(0,0,0,.12)'};
+    const sGhost={background:'#fff',color:'#6b6253',border:'1px solid #ddd2bd',borderRadius:'9px',padding:'8px 14px',fontWeight:600,fontSize:'14px',cursor:'pointer',fontFamily:'inherit',display:'inline-flex',alignItems:'center',gap:'6px'};
+
+    const out={
+      brandName, sPrimary, sGhost,
+      sPrimaryFlex:{...sPrimary, flex:1, justifyContent:'center'},
+      deleteIconStyle:{background:'#fff',color:'#b85c4a',border:'1px solid #e6c9c0',borderRadius:'9px',width:'38px',cursor:'pointer',fontSize:'13px',fontFamily:'inherit'},
+      addBtnStyle:{width:'26px',height:'26px',borderRadius:'7px',border:'none',background:accent,color:'#fff',fontSize:'17px',cursor:'pointer',lineHeight:1,display:'inline-flex',alignItems:'center',justifyContent:'center',padding:0},
+      stepBtnStyle:{width:'22px',height:'22px',borderRadius:'6px',border:'1px solid #ddd2bd',background:'#fff',color:'#6b6253',fontSize:'14px',cursor:'pointer',lineHeight:1,display:'inline-flex',alignItems:'center',justifyContent:'center',padding:0},
+      removeBtnStyle:{width:'24px',height:'24px',borderRadius:'6px',border:'none',background:'transparent',color:'#b85c4a',fontSize:'13px',cursor:'pointer',flexShrink:0},
+      dangerStyle:{background:'#c0392b',color:'#fff',border:'none',borderRadius:'9px',padding:'9px 18px',fontWeight:600,fontSize:'14px',cursor:'pointer',fontFamily:'inherit'},
+      isDash:s.view==='dashboard', isEditor:s.view==='editor', isView:s.view==='view',
+      goDash:this.goDash, openNew:this.openNew, openActiveView:this.openActiveView, openActiveEdit:this.openActiveEdit, stop:this.stop,
+      showNew:s.showNew, closeNew:this.closeNew, createDeck:this.createDeck, newName:s.newName, newFormat:s.newFormat,
+      onNewName:(e)=>this.setState({newName:e.target.value}), onNewFormat:(e)=>this.setState({newFormat:e.target.value}),
+      deletePending:!!s.deletePending, deletePendingName:(this.state.decks.find(d=>d.id===s.deletePending)||{}).name||'', confirmDelete:this.confirmDelete, cancelDelete:this.cancelDelete,
+      // editor controls
+      query:s.query, onQueryInput:(e)=>this.onQuery(e.target.value), onQueryKey:(e)=>{ if(e.key==='Enter') this.searchNow(); },
+      searching:s.searching, searchError:s.searchError, hasError:!!s.searchError,
+      setModeList:()=>this.setState({editorMode:'list'}), setModeGrid:()=>this.setState({editorMode:'grid'}),
+      listTabStyle:this.tabStyle(s.editorMode==='list',accent), gridTabStyle:this.tabStyle(s.editorMode==='grid',accent),
+      editorList:s.editorMode==='list', editorGrid:s.editorMode==='grid',
+      setViewGrid:()=>this.setState({viewMode:'grid'}), setViewList:()=>this.setState({viewMode:'list'}),
+      vGridTabStyle:this.tabStyle(s.viewMode==='grid',accent), vListTabStyle:this.tabStyle(s.viewMode==='list',accent),
+      viewGrid:s.viewMode==='grid', viewList:s.viewMode==='list',
+      setZoneMain:()=>this.setState({zone:'main'}), setZoneSide:()=>this.setState({zone:'side'}),
+      zoneMainStyle:{flex:1,padding:'7px',borderRadius:'8px',border:'1px solid '+(s.zone==='main'?accent:'#ddd2bd'),background:s.zone==='main'?accent+'1a':'#fff',color:s.zone==='main'?accent:'#6b6253',fontSize:'12px',fontWeight:600,cursor:'pointer',fontFamily:'inherit'},
+      zoneSideStyle:{flex:1,padding:'7px',borderRadius:'8px',border:'1px solid '+(s.zone==='side'?accent:'#ddd2bd'),background:s.zone==='side'?accent+'1a':'#fff',color:s.zone==='side'?accent:'#6b6253',fontSize:'12px',fontWeight:600,cursor:'pointer',fontFamily:'inherit'},
+      onRename:this.rename, clearCommander:this.clearCommander,
+      // defaults
+      curve:[], colorBars:[], hasColorBars:false, groups:[], gridCards:[], sideGroups:[], hasSide:false,
+      countLabel:'', priceLabel:'—', avgCmc:'0.00', lands:0, count:0, deckName:'', deckFormat:'', fmtBadgeStyle:{},
+      progressStyle:{}, showProgress:false, noProgress:false, isCommander:false, isStandard:false,
+      commander:null, hasCommander:false, noCommander:false, deckEmpty:false, showCommanderHi:false
+    };
+
+    // dashboard
+    out.decks=s.decks.map(d=>this.decoDeckCard(d));
+    out.hasDecks=s.decks.length>0; out.noDecks=s.loaded&&s.decks.length===0; out.deckCount=s.decks.length;
+
+    // active deck
+    const d=this.activeDeck();
+    if(d){
+      const st=this.stats(d);
+      out.deckName=d.name; out.deckFormat=this.fmtLabel(d.format); out.fmtBadgeStyle=this.fmtBadge(d.format,accent);
+      out.isCommander=d.format==='commander'; out.isStandard=d.format==='standard';
+      out.count=st.count; out.countLabel= st.target?(st.count+' / '+st.target):(st.count+' cartas');
+      out.showProgress=!!st.target; out.noProgress=!st.target;
+      out.progressStyle={width:(st.target?Math.min(100,st.count/st.target*100):0)+'%',height:'100%',background:accent,borderRadius:'6px',transition:'width .3s'};
+      out.avgCmc=st.avgCmc.toFixed(2); out.lands=st.lands; out.priceLabel=this.priceStr(st.price>0?st.price:null);
+      out.curve=st.curve; out.colorBars=st.colorBars; out.hasColorBars=st.colorBars.length>0;
+      out.commander= d.commander? this.deckRow(d.commander,'main') : null;
+      out.hasCommander=!!d.commander; out.noCommander= d.format==='commander'&&!d.commander;
+      out.showCommanderHi= d.format==='commander'&&!!d.commander;
+      out.groups=this.buildGroups(d.cards,'main');
+      out.gridCards=d.cards.map(c=>this.deckRow(c,'main'));
+      out.deckEmpty= d.cards.length===0 && !d.commander;
+      out.sideGroups=this.buildGroups(d.sideboard||[],'side'); out.hasSide=(d.sideboard||[]).length>0;
+    }
+
+    // search results
+    out.results=s.results.map(c=>this.decoResult(c,d));
+    out.hasResults=s.results.length>0; out.resultsCount=s.results.length;
+    out.showStart= !s.query.trim() && !s.searching && s.results.length===0 && !s.searchError;
+
+    // preview
+    const p=s.preview;
+    out.hasPreview=!!p; out.noPreview=!p;
+    out.preview= p? { name:p.name, image:p.image, type_line:p.type_line, manaPips:this.manaEl(p.mana_cost,17), priceLabel:this.priceStr(p.price), set:p.set, rarity:this.rarityLabel(p.rarity) } : null;
+
+    return out;
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Card {
+  id              Int          @id @default(autoincrement())
+  scryfallId      String       @unique
+  name            String
+  manaCost        String?
+  cmc             Float?
+  typeLine        String?
+  oracleText      String?
+  colors          String?
+  colorIdentity   String?
+  rarity          String?
+  setCode         String?
+  imageUris       String?
+  artCrop         String?
+  priceUsd        Float?
+  legalities      String?
+  lastFetchedAt   DateTime     @default(now())
+  deckCards       DeckCard[]
+}
+
+model Deck {
+  id            Int              @id @default(autoincrement())
+  name          String
+  description   String?
+  format        String           @default("commander")
+  isShared      Boolean          @default(false)
+  shareToken    String?          @unique
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  deckCards     DeckCard[]
+  comments      DeckComment[]
+}
+
+model DeckCard {
+  id       Int        @id @default(autoincrement())
+  deckId   Int
+  cardId   Int
+  qty      Int        @default(1)
+  zone     String     @default("main")
+  deck     Deck       @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  card     Card       @relation(fields: [cardId], references: [id], onDelete: Restrict)
+
+  @@unique([deckId, cardId, zone])
+}
+
+model ScryfallCache {
+  id        Int      @id @default(autoincrement())
+  cacheKey  String   @unique
+  payload   String
+  fetchedAt DateTime @default(now())
+}
+
+model DeckComment {
+  id         Int      @id @default(autoincrement())
+  deckId     Int
+  authorName String
+  message    String
+  createdAt  DateTime @default(now())
+  deck       Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+}
